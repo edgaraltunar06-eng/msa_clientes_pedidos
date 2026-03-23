@@ -1,0 +1,47 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq_practica_taller4
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: secretpassword
+    networks:
+      - microservicios_net
+
+  mysql_db:
+    image: mysql:8.0
+    container_name: mysql_clientes
+    ports:
+      - "3307:3306" # Puerto 3307 en Windows para evitar conflictos
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: clientes_db
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - microservicios_net
+
+  postgres_db:
+    image: postgres:15
+    container_name: postgres_pedidos
+    ports:
+      - "5434:5432" # Manteniendo el puerto 5434 que te funcionó bien
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secretpassword
+      POSTGRES_DB: pedidos_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - microservicios_net
+
+networks:
+  microservicios_net:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  postgres_data:

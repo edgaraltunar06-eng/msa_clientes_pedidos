@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Práctica Integradora - Panel de Control</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1200px; margin: auto; display: flex; gap: 20px; }
+        .panel { flex: 1; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h2 { border-bottom: 2px solid #007bff; padding-bottom: 10px; color: #007bff; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { background-color: #28a745; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
+        button:hover { background-color: #218838; }
+        .btn-blue { background-color: #007bff; }
+        .btn-blue:hover { background-color: #0056b3; }
+        .console { background-color: #2d2d2d; color: #00ff00; padding: 15px; border-radius: 4px; height: 150px; overflow-y: auto; font-family: monospace; white-space: pre-wrap; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+    <h1 style="text-align: center;">Gestión de Tienda (Microservicios)</h1>
+
+    <div class="container">
+        <div class="panel">
+            <h2>Microservicio Clientes (MySQL)</h2>
+            
+            <h3>Crear Cliente</h3>
+            <div class="form-group">
+                <label>Nombre:</label>
+                <input type="text" id="cli-nombre" placeholder="Ej. Juan Pérez">
+            </div>
+            <div class="form-group">
+                <label>Teléfono:</label>
+                <input type="text" id="cli-telefono" placeholder="Ej. 555-1234">
+            </div>
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" id="cli-email" placeholder="Ej. juan@correo.com">
+            </div>
+            <button onclick="crearCliente()">Guardar Cliente</button>
+
+            <hr style="margin: 20px 0;">
+
+            <h3>Consultar Cliente por ID</h3>
+            <div class="form-group">
+                <input type="number" id="cli-id-buscar" placeholder="ID del cliente a buscar">
+            </div>
+            <button class="btn-blue" onclick="buscarCliente()">Buscar Cliente</button>
+
+            <h4>Respuesta del Servidor:</h4>
+            <div id="out-clientes" class="console">Esperando peticiones...</div>
+        </div>
+
+        <div class="panel">
+            <h2>Microservicio Pedidos (PostgreSQL)</h2>
+            
+            <h3>Crear Pedido</h3>
+            <div class="form-group">
+                <label>ID del Cliente (Debe existir):</label>
+                <input type="number" id="ped-id-cliente" placeholder="Ej. 1">
+            </div>
+            <div class="form-group">
+                <label>Nombre del Producto:</label>
+                <input type="text" id="ped-producto" placeholder="Ej. Laptop">
+            </div>
+            <div class="form-group">
+                <label>Cantidad:</label>
+                <input type="number" id="ped-cantidad" placeholder="Ej. 2">
+            </div>
+            <button onclick="crearPedido()">Guardar Pedido</button>
+
+            <hr style="margin: 20px 0;">
+
+            <h3>Consultar Pedido por ID</h3>
+            <div class="form-group">
+                <input type="number" id="ped-id-buscar" placeholder="ID del pedido a buscar">
+            </div>
+            <button class="btn-blue" onclick="buscarPedido()">Buscar Pedido</button>
+
+            <h4>Respuesta del Servidor:</h4>
+            <div id="out-pedidos" class="console">Esperando peticiones...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_CLIENTES = "http://localhost:8001/clientes/";
+        const API_PEDIDOS = "http://localhost:8002/pedidos/";
+
+        function printLog(elementId, data) {
+            const el = document.getElementById(elementId);
+            el.textContent = JSON.stringify(data, null, 2);
+        }
+
+        // --- FUNCIONES PARA CLIENTES ---
+        async function crearCliente() {
+            const data = {
+                nombre: document.getElementById('cli-nombre').value,
+                telefono: document.getElementById('cli-telefono').value,
+                email: document.getElementById('cli-email').value
+            };
+
+            try {
+                const response = await fetch(API_CLIENTES, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                printLog('out-clientes', result);
+            } catch (error) {
+                printLog('out-clientes', { error: error.message });
+            }
+        }
+
+        async function buscarCliente() {
+            const id = document.getElementById('cli-id-buscar').value;
+            if(!id) return alert("Ingresa un ID");
+            
+            try {
+                const response = await fetch(API_CLIENTES + id);
+                const result = await response.json();
+                printLog('out-clientes', result);
+            } catch (error) {
+                printLog('out-clientes', { error: error.message });
+            }
+        }
+
+        // --- FUNCIONES PARA PEDIDOS ---
+        async function crearPedido() {
+            const data = {
+                id_cliente: parseInt(document.getElementById('ped-id-cliente').value),
+                nombre_pedido: document.getElementById('ped-producto').value,
+                cantidad: parseInt(document.getElementById('ped-cantidad').value)
+            };
+
+            try {
+                const response = await fetch(API_PEDIDOS, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                printLog('out-pedidos', result);
+            } catch (error) {
+                printLog('out-pedidos', { error: error.message });
+            }
+        }
+
+        async function buscarPedido() {
+            const id = document.getElementById('ped-id-buscar').value;
+            if(!id) return alert("Ingresa un ID");
+
+            try {
+                const response = await fetch(API_PEDIDOS + id);
+                const result = await response.json();
+                printLog('out-pedidos', result);
+            } catch (error) {
+                printLog('out-pedidos', { error: error.message });
+            }
+        }
+    </script>
+</body>
+</html>
