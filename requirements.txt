@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+pydantic
+pika
+psycopg2-binary
+pymysql
+cryptography
